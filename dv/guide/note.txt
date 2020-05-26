@@ -1,0 +1,49 @@
+1. Giời thiệu về vị trí testers và các skills và kỹ năng cần để trở thành tester.
++ Phân biệt Manual test và Autotest.
++ Các phương pháp test: Smoke test, funtional test, regression test, ....
++ ....
+
+2. Training ve cach define testplan, test procedures.
++ Cần các thông tin gì để define testplan
++ Cách define testplan và test procedures như thế nào.
++ ...
+
+3. Training về cách bring up systems và test cho các releases
++ Cach load code va cau hinh board(common cac steps)
++ Khi nào bring up datapath onboards
++ Cần phương tiện gì cho để bringup boards và start test cho các releases: SDK, boards, testers, cables, COM, USB Blatter, ...
++ Cách test và fill status, report status, raise issues(các thông tin cần khi form một issue), ...
++ ...
+
+4. Tạo các TCL/TTL scripts.
++ Cần study các phần nào của ngôn ngữ TCL để có thể implement được TCL scripts.
++ Để tạo các TCL cho products thì cần các thông tin gì, vì dụ CLIs format, SDK phải support để run TCLs trên epapp, ...
++ Cách để viết các TCLs scripts cho các projects
++ Sample TCLs
++ ...
+
+5. Training về process support customers cho các issues.
++ Vẽ flow-chart và guide process
+
+6. Training về các loai SFP, cables, commercial testers, USB blatter, interfaces(LIU, STM, ETH, OTN, ....), tools cần dùng cho quá trình test(TFPT, Vivado, ..)
+
+7. Training về Bug tracking process
+
+8. Training về Python, Autotest developement/framework.
+
+9. Sample for Autotest framework, test cases develeopment to run on real systems.
+
+
+Tasks assignment:
+- Dang: item #4 & 5
+- Tho: item #1 & 2
+- Khanh: item #3
+- Tri: item #6
+- Minh: item#7-9
+
+Document format:
+- Markdown
+- Ngôn ngữ: Tiếng Việt.
+- Cần nhiều pictures/flow chart/diagram để diễn giải, nội dung ngắn gọn, đầy đủ và dễ hiểu.
+
+Deadline: Done 15/04

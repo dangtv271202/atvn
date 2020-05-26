@@ -1,0 +1,45 @@
+Summary
+Payload size and Jitter buffer dependency 
+In hardware view, jitter buffer size is configured in packets unit reflects the number of packets received from 
+PSN side, temporarily stored in buffer before playing-out to TDM circuit. SDK allows user to configure jitter 
+buffer in both microsecond unit and packets unit. 
+When user configures buffer size in microsecond unit, if it is accepted by supported range of microsecond,it 
+is convertedfrom microsecondunit to packets unitthen configure to hardware by formula: 
+NumBytes = Rate * BufferSizeUs 
+Jitter  buffer  size  in  packet  unit  =  (NumByte  /  PayloadSize)  +  1  if  remaining  of  NumByte  /  PayloadSize  is 
+greater than or equal to one third of PayloadSize 
+Where: 
+
+     NumByte: The number of bytes corresponding to buffer size in microsecond and circuit rate   Rate: Rate of Pseudowire’s TDM circuit in byte per microsecond 
+     BufferSizeUs: Size of jitter buffer in microsecond 
+     PayloadSize: Pseudowire’spayload size in bytes 
+
+For example, assume that there is a DS1 SAToP service running on OCN card with payload size 200 bytes, 
+jitter buffer size 16ms and user would like to modify jitter buffer size for this Pseudowire to 32ms. New buffer 
+size in packets is computed as below: 
+DS1 rate is 193 bytes per millisecond 
+The number of bytes corresponding to 32 ms is 193 * 32 = 6144 bytes 
+Jitter buffer size in packets unit is 6144 / 200 + 1 = 31 packets 
+Anytime user wants to change Pseudowire payload size or jitter buffer size in microsecond, new buffer size 
+in packets unit isre-calculated from new payload size withcurrent jitter buffer size (changing payload size) or 
+new jitter buffer size with current payload size (changing jitter buffer size).This new buffer size in packets unit 
+must satisfy the range that products support, otherwise, configuration will not be successful. 
+When  user  configure  jitter  buffer  in  packets  unit,  it  must  satisfy  the  supported  range  in  packets,  then  it  is 
+converted from packets unit into micro second unit to double check with supported range in microsecond. 
+Input buffer size in packets unit isapplied to hardware if it is accepted by both two constrains. 
+Formula to convert buffer in packets to microsecond unit: 
+NumBytes = BufferInPacket * PayloadSize 
+BufferInUs = NumBytes / Rate + 1 if remaining of NumBytes / Rate is larger than 0 
+Where: 
+
+       NumBytes: The number of bytes corresponding to buffer size in packets and payload size in bytes 
+       Rate: Rate of Pseudowire’s TDM circuit in byte per microsecond 
+       BufferInUs: Jitter buffer size in mircosecond 
+
+The implementation limits the range of number of packets as jitter buffer size differently for each product and 
+each service type as below. 
+
+
+
+
+When jitter buffer size of a Pseudowireis configured, a part of RAM will be allocated with size corresponds with  that  buffer  size,  RAM  allocation  implementation  is  described  in  following  part.  Because  RAM resourcesare  limited,  buffer  size  in  packets  unit  (a  combination  of  payload  size  and  jitter  buffer  size  in microsecond or size in packets directly input by user) will NOT always be successfully applied to hardware, it strictly depends on how much free RAM resources remain. 

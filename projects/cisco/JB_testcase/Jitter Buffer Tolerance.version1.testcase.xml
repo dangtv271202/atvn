@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<testcases>
+<testcase internalid="10541" name="Jitter Buffer Tolerance">
+	<node_order><![CDATA[100]]></node_order>
+	<externalid><![CDATA[1111]]></externalid>
+	<version><![CDATA[1]]></version>
+	<summary><![CDATA[<div><strong>Payload size and Jitter buffer dependency&nbsp;</strong></div>
+<div>In hardware view, jitter buffer size is configured in packets unit reflects the number of packets received from&nbsp;</div>
+<div>PSN side, temporarily stored in buffer before playing-out to TDM circuit. SDK allows user to configure jitter&nbsp;</div>
+<div>buffer in both microsecond unit and packets unit.&nbsp;</div>
+<div>When user configures buffer size in microsecond unit, if it is accepted by supported range of microsecond,it&nbsp;</div>
+<div>is convertedfrom microsecondunit to packets unitthen configure to hardware by formula:&nbsp;</div>
+<div>NumBytes = Rate * BufferSizeUs&nbsp;</div>
+<div>Jitter &nbsp;buffer &nbsp;size &nbsp;in &nbsp;packet &nbsp;unit &nbsp;= &nbsp;(NumByte &nbsp;/ &nbsp;PayloadSize) &nbsp;+ &nbsp;1 &nbsp;if &nbsp;remaining &nbsp;of &nbsp;NumByte &nbsp;/ &nbsp;PayloadSize &nbsp;is&nbsp;</div>
+<div>greater than or equal to one third of PayloadSize&nbsp;</div>
+<div>Where:&nbsp;</div>
+<ul>
+    <li>&nbsp;NumByte: The number of bytes corresponding to buffer size in microsecond and circuit rate&nbsp;&nbsp; Rate: Rate of Pseudowire&rsquo;s TDM circuit in byte per microsecond&nbsp;</li>
+    <li>&nbsp;BufferSizeUs: Size of jitter buffer in microsecond&nbsp;</li>
+    <li>&nbsp;PayloadSize: Pseudowire&rsquo;spayload size in bytes&nbsp;</li>
+</ul>
+<div>For example, assume that there is a DS1 SAToP service running on OCN card with payload size 200 bytes,&nbsp;</div>
+<div>jitter buffer size 16ms and user would like to modify jitter buffer size for this Pseudowire to 32ms. New buffer&nbsp;</div>
+<div>size in packets is computed as below:&nbsp;</div>
+<div>DS1 rate is 193 bytes per millisecond&nbsp;</div>
+<div>The number of bytes corresponding to 32 ms is 193 * 32 = 6144 bytes&nbsp;</div>
+<div>Jitter buffer size in packets unit is 6144 / 200 + 1 = 31 packets&nbsp;</div>
+<div>Anytime user wants to change Pseudowire payload size or jitter buffer size in microsecond, new buffer size&nbsp;</div>
+<div>in packets unit isre-calculated from new payload size withcurrent jitter buffer size (changing payload size) or&nbsp;</div>
+<div>new jitter buffer size with current payload size (changing jitter buffer size).This new buffer size in packets unit&nbsp;</div>
+<div>must satisfy the range that products support, otherwise, configuration will not be successful.&nbsp;</div>
+<div>When &nbsp;user &nbsp;configure &nbsp;jitter &nbsp;buffer &nbsp;in &nbsp;packets &nbsp;unit, &nbsp;it &nbsp;must &nbsp;satisfy &nbsp;the &nbsp;supported &nbsp;range &nbsp;in &nbsp;packets, &nbsp;then &nbsp;it &nbsp;is&nbsp;</div>
+<div>converted from packets unit into micro second unit to double check with supported range in microsecond.&nbsp;</div>
+<div>Input buffer size in packets unit isapplied to hardware if it is accepted by both two constrains.&nbsp;</div>
+<div>Formula to convert buffer in packets to microsecond unit:&nbsp;</div>
+<div>NumBytes = BufferInPacket * PayloadSize&nbsp;</div>
+<div>BufferInUs = NumBytes / Rate + 1 if remaining of NumBytes / Rate is larger than 0&nbsp;</div>
+<div>Where:&nbsp;</div>
+<ul>
+    <li>&nbsp; &nbsp;NumBytes: The number of bytes corresponding to buffer size in packets and payload size in bytes&nbsp;</li>
+    <li>&nbsp; &nbsp;Rate: Rate of Pseudowire&rsquo;s TDM circuit in byte per microsecond&nbsp;</li>
+    <li>&nbsp; &nbsp;BufferInUs: Jitter buffer size in mircosecond&nbsp;</li>
+</ul>
+<div>The implementation limits the range of number of packets as jitter buffer size differently for each product and&nbsp;</div>
+<div>each service type as below.&nbsp;<br />
+<strong>OCN Card</strong></div>
+<div>&nbsp;<img src="/testlink/upload_area/fckeditor_upload_area/image/Pw/OCN%20card.JPG" width="978" height="526" alt="" /></div>
+<div>&nbsp;</div>
+<p><strong>&nbsp;DS3/E3 Card<br />
+<img src="/testlink/upload_area/fckeditor_upload_area/image/Pw/Ds3%20card.JPG" width="972" height="250" alt="" /><br type="_moz" />
+</strong></p>
+<p><strong>DS1/E1 Card<br />
+<img src="/testlink/upload_area/fckeditor_upload_area/image/Pw/Ds1%20card.JPG" width="972" height="139" alt="" /><br type="_moz" />
+</strong></p>
+<p>When jitter buffer size of a Pseudowireis configured, a part of RAM will be allocated with size corresponds&nbsp;with &nbsp;that &nbsp;buffer &nbsp;size, &nbsp;RAM &nbsp;allocation &nbsp;implementation &nbsp;is &nbsp;described &nbsp;in &nbsp;following &nbsp;part. &nbsp;Because &nbsp;RAM&nbsp;resourcesare &nbsp;limited, &nbsp;buffer &nbsp;size &nbsp;in &nbsp;packets &nbsp;unit &nbsp;(a &nbsp;combination &nbsp;of &nbsp;payload &nbsp;size &nbsp;and &nbsp;jitter &nbsp;buffer &nbsp;size &nbsp;in&nbsp;microsecond or size in packets directly input by user) will NOT always be successfully applied to hardware, it&nbsp;strictly depends on how much free RAM resources remain.&nbsp;</p>]]></summary>
+	<preconditions><![CDATA[]]></preconditions>
+	<execution_type><![CDATA[1]]></execution_type>
+	<importance><![CDATA[2]]></importance>
+<steps>
+<step>
+	<step_number><![CDATA[1]]></step_number>
+	<actions><![CDATA[<p>#1 : Setup Data path with model:</p>
+<p>&nbsp;&nbsp; Tester -(PDH/SDH)- Dut -(Eth)- Annue</p>
+<p>&nbsp;&nbsp; Ex : cfg JB at DUT is : JB size = 32ms , JD size = 16ms (1ms/1pkt : DS1 pw payload size 192bytes)</p>
+<p>&nbsp;&nbsp; Annue cfg Constance Delay = 50 ms&nbsp;</p>]]></actions>
+	<expectedresults><![CDATA[<p>#1 : Data path OK, Jitter = 16pkt(&lt;=&gt;16ms)</p>
+<p>&nbsp; &nbsp; &nbsp;&nbsp;Counter : NumPktsInJitterBuffer = 15pkt + some-bytes ~ 16pkt (<em>show pw counters</em>)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (Delay of network make delay ~1pkt)</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[2]]></step_number>
+	<actions><![CDATA[<p>Refer Step#1</p>
+<p>#1 : Increse Constance Delay up to 65 ms (with step 1ms)</p>
+<p>**Min of jitterbuffer = 2pkt</p>]]></actions>
+	<expectedresults><![CDATA[<p>#1 : Data path still OK</p>
+<p>&nbsp;&nbsp; **Counter NumPktsInJitterBuffer is decresed num-pkt equal of ms increse at Annue&nbsp;</p>
+<p>&nbsp;&nbsp; **When Annue up to 64ms : data path still ok , NumPktsInJitterBuffer = 1+ some-bytes</p>
+<p>&nbsp;&nbsp; **When Annue up to 65ms --&gt; counter RxJitBufUnderrunEvents set = num-pkt/1ms * ms_increse_atAnnue - (num-pkt/1ms*JDsize - JBmin)  = 1*(65-50) -(1*16 -2) = 1 (Because in this case 1pkt/1ms --&gt; JDsize min = 14 , if npkt/1ms with n&gt;2 --&gt; delay can increse at Annue can up to 15ms with data path OK : from 50ms-&gt;65ms , just count Underrun when increse more than 15ms)</p>
+<p>&nbsp;&nbsp;&nbsp; **If Annue increse more than 15 ms (Ex:up to 70ms) --&gt; counter RxJitBufUnderrunEvents set = num-pkt/1ms * (ms_increse_atAnnue - (JDsize - JBmin)) = 1*((70-50) - (16-2)) = 6</p>
+<p>&nbsp;&nbsp;&nbsp; **After Underrun Event occur(interrupt PW set) , check again JB of PW ,it must be center again , counter NumPktsInJitterBuffer ~ JDsize (turn to begining value when set up data path OK)</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[3]]></step_number>
+	<actions><![CDATA[<p>Refer Step#1</p>
+<p>#1 : Decrese Constance delay down to 33ms (with step 1ms)</p>]]></actions>
+	<expectedresults><![CDATA[<p>#1 : Data path still OK</p>
+<p>&nbsp;&nbsp; **Counter NumPktsInJitterBuffer is incresed num-pkt equal of ms decresed at Annue&nbsp;</p>
+<p>&nbsp;&nbsp; **When Annue down to 34 ms : data path still ok , NumPktsInJitterBuffer = 31 + some-bytes &lt; JBsize(32ms)</p>
+<p>&nbsp;&nbsp; **When Annue down to 33ms --&gt; counter RxJitBufOverrunEvents set = (JDsize + ms_decrese_atAnnue) * num-pkt/1ms = (16+(50-33))*1 = 33</p>
+<p>&nbsp;&nbsp;&nbsp; **If Annue decrese more than 16 ms (Ex: down to 30ms)  --&gt; counter RxJitBufOverrunEvents set = num-pkt/1ms * (JDsize + ms_decrese_atAnnue) = 1*(16+(50-30)) = 36</p>
+<p>&nbsp;&nbsp;&nbsp; **After Overrun Event occur(interrupt PW set) , check again JB of PW ,it must be center  again , counter NumPktsInJitterBuffer ~ JDsize (turn to begining value  when set up data path OK)</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[4]]></step_number>
+	<actions><![CDATA[<p>Refer Step#2</p>
+<p>&nbsp;&nbsp; ** Do the thing as Step#2 but action with nPWs</p>]]></actions>
+	<expectedresults><![CDATA[<p>&nbsp; ** When calculate Delay, we must plus the delays appear by queue-pkt , as more PWs as more delay</p>
+<p>&nbsp;&nbsp;  ** In this case , NumPktsInJitterBuffer can be more than JDsize</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[6]]></step_number>
+	<actions><![CDATA[<p>Rfer Step#3</p>
+<p>&nbsp;&nbsp; ** Do the same things as Step#3 but action with nPWs</p>]]></actions>
+	<expectedresults><![CDATA[<p>&nbsp; ** When calculate Delay must plus delay appear by queue-pkt , as more PWs as more delay</p>
+<p>&nbsp;&nbsp; ** In this case , NumPktsInJitterBuffer can more than JDsize</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[7]]></step_number>
+	<actions><![CDATA[<p>Set up data path as Step#1 but JB size and JD size are different </p>
+<p>Repeat Step#2-5</p>]]></actions>
+	<expectedresults><![CDATA[]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[8]]></step_number>
+	<actions><![CDATA[<p>In Annue , can use Delay Gaussian , Internet , Uniform to test JB Tolerent by set min - max range-delay&nbsp; </p>]]></actions>
+	<expectedresults><![CDATA[]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[9]]></step_number>
+	<actions><![CDATA[<p>1 - Connect Board with Annue : (auto-neg disable at DUT)</p>
+<p>2 - In Annue : enable Drop</p>
+<p>&nbsp;&nbsp; + Force drop packet = Num count</p>
+<p>&nbsp;&nbsp; + Force continue drop packet</p>
+<p>3 - Disable Drop</p>]]></actions>
+	<expectedresults><![CDATA[<p>1 - Check data path OK</p>
+<p>2 - DUT:</p>
+<p>&nbsp;&nbsp; + Check RxLostPackets = Num count in Annue , Num Tx pkt = NumRx pkt + RxLostPackets , If Annue choose &quot;Select 1 in 5 pkts&quot; : check Tx pkt ~ LostPacket * 5</p>
+<p>&nbsp;&nbsp; + Num Tx pkt = NumRx pkt + RxLostPackets , If Annue choose &quot;Select 1 in 5 pkts&quot; : check Tx pkt ~ LostPacket * 5</p>
+<p>&nbsp;&nbsp; + Check NumPktsInJitterBuffer : not be decreased continuously (when drop not all, RxJitBufUnderrunPackets = 0)</p>
+<p>&nbsp;3 - Check Data path OK</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[10]]></step_number>
+	<actions><![CDATA[<p>1 - Connect Board with Annue :&nbsp;(auto-neg disable at DUT)</p>
+<p>2 - In Annue : enable Duplicate</p>
+<p>&nbsp;&nbsp; + Force Duplicate packet = Num count , set &quot;Add between 1 and 1 copies&quot;</p>
+<p>&nbsp;&nbsp; + Force Duplicate continuous , set &quot;Add between 1 and 1 copies&quot;</p>
+<p>3 - Disable Duplicate packet</p>]]></actions>
+	<expectedresults><![CDATA[<p>1 - Check Data path OK</p>
+<p>2 - DUT :</p>
+<p>&nbsp;&nbsp; + Check RxOutOfSeqDropPackets = RxDiscardedPackets = Num count in Annue , Rxpacket = Txpacket + RxDiscardedPackets, If Annue choose &quot;Select 1 in 5 packets&quot; and &quot;Add between 1 and 1 copies&quot; : Tx packet ~ RxDiscardedPackets * 5</p>
+<p>&nbsp;&nbsp; + Rxpacket = Txpacket + RxDiscardedPackets, If Annue choose &quot;Select 1 in 5 packets&quot; and &quot;Add between 1 and 1 copies&quot; : Tx packet ~ RxDiscardedPackets * 5</p>
+<p>&nbsp;&nbsp; + Check NumPktsInJitterBuffer : not be decreased continuously</p>
+<p>&nbsp;&nbsp; + Check Tester : must not Fail </p>
+<p>3 - Check data path OK</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[11]]></step_number>
+	<actions><![CDATA[<p>1 - Connect Board with Annue : (auto-neg disable at DUT)</p>
+<p>2 - In Annue : enable Reoder</p>
+<p>&nbsp;&nbsp; + Force Reoder packet = Num count , set &quot;Packet offset range 1 in 1 packtes&quot;</p>
+<p>&nbsp;&nbsp; + Force Reoder packet continuous , set &quot;Packet offset range 1 in 1 packtes&quot;</p>
+<p>3 - Disable Reoder packet</p>]]></actions>
+	<expectedresults><![CDATA[<p>1 - Check data path OK</p>
+<p>2 - DUT :</p>
+<p>&nbsp;&nbsp; + Check : RxReorderedPackets = Num count in Annue</p>
+<p>&nbsp;&nbsp; + Check RxReorderedPackets diff 0</p>
+<p>&nbsp;&nbsp; + Check NumPktsInJitterBuffer : not be decreased continuously</p>
+<p>&nbsp;&nbsp; + Check Tester : must not Fail</p>
+<p>&nbsp;&nbsp; + If packets set reodered more than JB -&gt; out of sequence reoder, count discard packet</p>
+<p>3 - Check data path OK</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+
+<step>
+	<step_number><![CDATA[12]]></step_number>
+	<actions><![CDATA[<p>1 - Connect Board with Annue : (auto-neg disable at DUT)</p>
+<p>2 - Mix Enable Drop , Duplicate , Reoder</p>
+<p>3 - Disable all</p>]]></actions>
+	<expectedresults><![CDATA[<p>1 - Check data path OK</p>
+<p>2 - Check counter set :&nbsp;RxDiscardedPackets , RxReorderedPackets , RxLostPackets , RxOutOfSeqDropPackets </p>
+<p>3 - Check data path OK</p>]]></expectedresults>
+	<execution_type><![CDATA[1]]></execution_type>
+</step>
+</steps>
+<custom_fields>
+	<custom_field>
+		<name><![CDATA[Requirement  Description]]></name>
+		<value><![CDATA[]]></value>
+	</custom_field>	<custom_field>
+		<name><![CDATA[State]]></name>
+		<value><![CDATA[]]></value>
+	</custom_field>	<custom_field>
+		<name><![CDATA[TestScript]]></name>
+		<value><![CDATA[]]></value>
+	</custom_field>	<custom_field>
+		<name><![CDATA[Configuration]]></name>
+		<value><![CDATA[]]></value>
+	</custom_field>	<custom_field>
+		<name><![CDATA[Test  Procedure]]></name>
+		<value><![CDATA[]]></value>
+	</custom_field>	<custom_field>
+		<name><![CDATA[Variables]]></name>
+		<value><![CDATA[]]></value>
+	</custom_field>	<custom_field>
+		<name><![CDATA[Test Type]]></name>
+		<value><![CDATA[]]></value>
+	</custom_field>	<custom_field>
+		<name><![CDATA[Category]]></name>
+		<value><![CDATA[]]></value>
+	</custom_field>
+</custom_fields></testcase>
+</testcases>

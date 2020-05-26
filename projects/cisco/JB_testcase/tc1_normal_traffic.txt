@@ -1,0 +1,14 @@
+#1 : Setup Data path with model:
+
+   Tester -(PDH/SDH)- Dut -(Eth)- Annue
+
+   Ex : cfg JB at DUT is : JB size = 32ms , JD size = 16ms (1ms/1pkt : DS1 pw payload size 192bytes)
+
+   Annue cfg Constance Delay = 50 ms 
+   
+# Pass condition:
+#1 : Data path OK, Jitter = 16pkt(<=>16ms)
+
+      Counter : NumPktsInJitterBuffer = 15pkt + some-bytes ~ 16pkt (show pw counters)
+
+      (Delay of network make delay ~1pkt)
